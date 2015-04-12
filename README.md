@@ -4,20 +4,8 @@ PowerYaml
 PowerYaml is a wrapper around [Yaml.Net]() library. The wrapper was originally developed by [Scott Muc](https://github.com/scottmuc) and [Manoj Mahalingam](https://github.com/manojlds).
 
 Sample
--
-
-	parent: 
-	  child:
-		a: a value
-		b: b value
-		c: c value
-	  child2: 
-		key4: value 4
-		key5: value 5
-
-And here's the parsing of the above yaml		
-		
-	Import-Module .\PowerYaml.psm1
+-	
+	Import-Module PowerYaml
 
     $yaml = @"
 	parent: 
@@ -31,8 +19,6 @@ And here's the parsing of the above yaml
 	"@
 
 	$r=$yaml | ConvertFrom-Yaml
-	
- 
 
 Results
 -
@@ -48,5 +34,18 @@ Results
 	----    ----   
 	value 4 value 5                                                  
 
+
+Import-Yaml
+-
+Does Files
+
+	dir *.yml|Import-Yaml
+
+Results
+-
+	name              job       skill     
+	----              ---       -----     
+	Example Developer Developer Elite     
+	John Doe          Developer PowerShell
 
 On GitHub [Yaml.Net](https://github.com/aaubry/YamlDotNet)

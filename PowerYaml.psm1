@@ -22,8 +22,10 @@ function Convert-YamlNode($node) {
             Convert-YamlMappingNodeToHash $_
         }
 
-        {$_ -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {foreach($yamlNode in $_.Children) {
-            Convert-YamlNode $yamlNode }
+        {$_ -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {
+            foreach($yamlNode in $_.Children) {
+                Convert-YamlNode $yamlNode
+            }
         }
     }
 }
@@ -35,7 +37,7 @@ function ConvertFrom-Yaml {
     )
 
     Process {
-        $reader = New-Object System.IO.StringReader $yaml
+        $reader     = New-Object System.IO.StringReader $yaml
         $yamlStream = New-Object YamlDotNet.RepresentationModel.YamlStream
         $yamlStream.Load($reader)
         $reader.Close()
