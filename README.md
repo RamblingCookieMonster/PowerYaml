@@ -5,35 +5,20 @@ PowerYaml is a wrapper around [Yaml.Net]() library. The wrapper was originally d
 
 Sample
 -	
-	Import-Module PowerYaml
 
-    $yaml = @"
-	parent: 
-	  child:
-	    a: a value
-	    b: b value
-	    c: c value
-	  child2: 
-	    key4: value 4
-	    key5: value 5
-	"@
-
-	$r=$yaml | ConvertFrom-Yaml
+	@"
+	---
+	# An employee record
+	name: Example Developer
+	job: Developer
+	skill: Elite
+	"@ | ConvertFrom-Yaml	
 
 Results
 -
-	$r.parent.child  
-	
-	a       b       c      
-	-       -       -      
-	a value b value c value
-	
-	$r.parent.child2
-	
-	key4    key5   
-	----    ----   
-	value 4 value 5                                                  
-
+	name              job       skill
+	----              ---       -----
+	Example Developer Developer Elite
 
 Import-Yaml
 -
