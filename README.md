@@ -1,12 +1,10 @@
-﻿PowerYaml
-=========
+PowerYaml
+-
 
-PowerYaml is a wrapper around [Yaml.Net][] library which is the best .Net Yaml parser I've found so far.
+PowerYaml is a wrapper around [Yaml.Net]() library. The wrapper was originally developed by [Scott Muc](https://github.com/scottmuc) and [Manoj Mahalingam](https://github.com/manojlds).
 
 Sample
-------
-
-Paste the following into a *sample.yml* file
+-
 
 	parent: 
 	  child:
@@ -19,14 +17,36 @@ Paste the following into a *sample.yml* file
 
 And here's the parsing of the above yaml		
 		
-	PS C:\dev\PowerYaml> Import-Module .\PowerYaml.psm1
-    PS C:\dev\PowerYaml> $yaml = Get-Yaml -FromFile (Resolve-Path .\sample.yml)
-    PS C:\dev\PowerYaml> $yaml.parent.child
+	Import-Module .\PowerYaml.psm1
 
-	Name                           Value
-	----                           -----
-	a                              a value
-	b                              b value
-	c                              c value
+    $yaml = @"
+	parent: 
+	  child:
+	    a: a value
+	    b: b value
+	    c: c value
+	  child2: 
+	    key4: value 4
+	    key5: value 5
+	"@
 
-[Yaml.Net]: http://sourceforge.net/projects/yamldotnet/ "Yaml.Net"
+	$r=$yaml | ConvertFrom-Yaml
+	
+ 
+
+Results
+-
+	$r.parent.child  
+	
+	a       b       c      
+	-       -       -      
+	a value b value c value
+	
+	$r.parent.child2
+	
+	key4    key5   
+	----    ----   
+	value 4 value 5                                                  
+
+
+On GitHub [Yaml.Net](https://github.com/aaubry/YamlDotNet)
