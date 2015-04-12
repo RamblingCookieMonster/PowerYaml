@@ -1,7 +1,7 @@
 Add-Type -Path $PSScriptRoot\YamlDotNet.Core.dll
 Add-Type -Path $PSScriptRoot\YamlDotNet.RepresentationModel.dll
 
-function Convert-YamlMappingNodeToHash($node) {
+function Convert-YamlMappingNode ($node) {
     $hash = [ordered]@{}
     $yamlNodes = $node.Children
 
@@ -19,7 +19,7 @@ function Convert-YamlNode($node) {
         }
 
         {$_ -is [YamlDotNet.RepresentationModel.YamlMappingNode]} {
-            Convert-YamlMappingNodeToHash $_
+            Convert-YamlMappingNode $_
         }
 
         {$_ -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {
