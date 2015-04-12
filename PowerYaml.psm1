@@ -31,7 +31,7 @@ function Convert-YamlNode($node) {
 function ConvertFrom-Yaml {
     param(
         [Parameter(ValueFromPipeline)]
-        $yaml
+        [string]$yaml
     )
 
     Process {
@@ -45,4 +45,12 @@ function ConvertFrom-Yaml {
 }
 
 function Import-Yaml {
+    param(
+        [Parameter(ValueFromPipeline)]
+        $LiteralPath
+    )
+    
+    Process {
+        [System.IO.File]::ReadAllText($LiteralPath) | ConvertFrom-Yaml 
+    }           
 }
