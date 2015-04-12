@@ -17,6 +17,23 @@ skill: Elite
 # An employee record
 {name: Example Developer, job: Developer, skill: Elite}
 "@ 
+        $employeeRecord3 = @"
+---
+# An employee record
+name: Example Developer
+job: Developer
+skill: Elite
+employed: True
+foods:
+    - Apple
+    - Orange
+    - Strawberry
+    - Mango
+languages:
+    ruby: Elite
+    python: Elite
+    dotnet: Lame
+"@ 
 
     Context "Employee Record 1 Data" {
 
@@ -38,5 +55,35 @@ skill: Elite
             $result.job | Should Be Developer 
             $result.skill | Should Be Elite
         }
+    }
+
+    Context "Employee Record 3 Data" {
+
+        $result = $employeeRecord3 | ConvertFrom-Yaml
+
+        It "should have a name" {
+            $result.name | Should Be "Example Developer"
+        }
+
+        It "should have a job" {
+            $result.job | Should Be "Developer"
+        }
+
+        It "should have skill" {
+            $result.skill | Should Be "Elite"
+        }
+
+        It "should have 4 foods" {
+            $result.foods.count | Should Be 4
+        }
+
+        It "should be employeed" {
+            $result.employed | Should Be 'true'
+        }
+
+        It "should have three languages" {
+            ($result.languages|gm -MemberType NoteProperty).count | Should Be 3
+        }
+
     }
 }
