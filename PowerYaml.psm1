@@ -1,4 +1,4 @@
-Add-Type -Path  $PSScriptRoot\YamlDotNet.Core.dll
+Add-Type -Path $PSScriptRoot\YamlDotNet.Core.dll
 Add-Type -Path $PSScriptRoot\YamlDotNet.RepresentationModel.dll
 
 function Convert-YamlMappingNodeToHash($node) {
