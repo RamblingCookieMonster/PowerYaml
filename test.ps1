@@ -1,22 +1,18 @@
-﻿
-#Add-Type -Path  .\YamlDotNet.Core.dll
-#Add-Type -Path .\YamlDotNet.RepresentationModel.dll
-
-Add-Type -Path  .\Libs\YamlDotNet.Core.dll
-Add-Type -Path .\Libs\YamlDotNet.RepresentationModel.dll
+﻿Add-Type -Path  .\YamlDotNet.Core.dll
+Add-Type -Path .\YamlDotNet.RepresentationModel.dll
 
 function Convert-YamlMappingNodeToHash($node) {
     $hash = [ordered]@{}
     $yamlNodes = $node.Children
 
     foreach($key in $yamlNodes.Keys) {
-        $hash.$($key.Value) = Explode-Node $yamlNodes.$key
+        $hash.$($key.Value) = Convert-YamlNode $yamlNodes.$key
     }
 
     [PSCustomObject]$hash
 }
 
-function Explode-Node($node) {
+function Convert-YamlNode($node) {
     switch ($node) {
         {$_ -is [YamlDotNet.RepresentationModel.YamlScalarNode]} {
             $_.Value
@@ -27,7 +23,7 @@ function Explode-Node($node) {
         }
         
         {$_ -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {foreach($yamlNode in $_.Children) { 
-            Explode-Node $yamlNode }
+            Convert-YamlNode $yamlNode }
         }
     }
 }
@@ -39,12 +35,12 @@ function ConvertFrom-Yaml {
     )
     
     Process {
-        $r=New-Object System.IO.StringReader $yaml
-        $obj = New-Object YamlDotNet.RepresentationModel.YamlStream
-        $obj.Load($r)
-        $r.Close()
+        $reader = New-Object System.IO.StringReader $yaml
+        $yamlStream = New-Object YamlDotNet.RepresentationModel.YamlStream
+        $yamlStream.Load($reader)
+        $reader.Close()
 
-        Explode-Node $obj.Documents.Rootnode
+        Convert-YamlNode $yamlStream.Documents.Rootnode
     }
 }
 
@@ -52,6 +48,15 @@ function Import-Yaml {
 }
 
 cls
+
+$result = @"
+---
+# An employee record
+{name: Example Developer, job: Developer, skill: Elite}
+"@ | ConvertFrom-Yaml
+
+$result.psobject.properties|ft
+return
 
 $yaml = @"
 sudo: false

@@ -1,29 +1,48 @@
-. $PSScriptRoot\Functions\Casting.ps1
-. $PSScriptRoot\Functions\Shadow-Copy.ps1
-. $PSScriptRoot\Functions\YamlDotNet-Integration.ps1
-. $PSScriptRoot\Functions\Validator-Functions.ps1
+Add-Type -Path  $PSScriptRoot\YamlDotNet.Core.dll
+Add-Type -Path $PSScriptRoot\YamlDotNet.RepresentationModel.dll
 
-<# 
- .Synopsis
-  Returns an object that can be dot navigated
+function Convert-YamlMappingNodeToHash($node) {
+    $hash = [ordered]@{}
+    $yamlNodes = $node.Children
 
- .Parameter FromFile
-  File reference to a yaml document
-
- .Parameter FromString
-  Yaml string to be converted
-#>
-function Get-Yaml([string] $FromString = "", [string] $FromFile = "") {
-    if ($FromString -ne "") {
-        $yaml = Get-YamlDocumentFromString $FromString
-    } elseif ($FromFile -ne "") {
-        if ((Validate-File $FromFile)) {
-            $yaml = Get-YamlDocument -file $FromFile
-        }
+    foreach($key in $yamlNodes.Keys) {
+        $hash.$($key.Value) = Convert-YamlNode $yamlNodes.$key
     }
 
-    return Explode-Node $yaml.RootNode
+    [PSCustomObject]$hash
 }
 
-Load-YamlDotNetLibraries (Join-Path $PSScriptRoot -ChildPath "Libs")
-Export-ModuleMember -Function Get-Yaml 
+function Convert-YamlNode($node) {
+    switch ($node) {
+        {$_ -is [YamlDotNet.RepresentationModel.YamlScalarNode]} {
+            $_.Value
+        }
+
+        {$_ -is [YamlDotNet.RepresentationModel.YamlMappingNode]} {
+            Convert-YamlMappingNodeToHash $_
+        }
+
+        {$_ -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {foreach($yamlNode in $_.Children) {
+            Convert-YamlNode $yamlNode }
+        }
+    }
+}
+
+function ConvertFrom-Yaml {
+    param(
+        [Parameter(ValueFromPipeline)]
+        $yaml
+    )
+
+    Process {
+        $reader = New-Object System.IO.StringReader $yaml
+        $yamlStream = New-Object YamlDotNet.RepresentationModel.YamlStream
+        $yamlStream.Load($reader)
+        $reader.Close()
+
+        Convert-YamlNode $yamlStream.Documents.Rootnode
+    }
+}
+
+function Import-Yaml {
+}
