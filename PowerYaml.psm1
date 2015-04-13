@@ -1,33 +1,33 @@
-Add-Type -Path $PSScriptRoot\YamlDotNet.Core.dll
-Add-Type -Path $PSScriptRoot\YamlDotNet.RepresentationModel.dll
-
-function Convert-YamlMappingNode ($node) {
-    $hash = [ordered]@{}
-    $yamlNodes = $node.Children
-
-    foreach($key in $yamlNodes.Keys) {
-        $hash.$($key.Value) = Convert-YamlNode $yamlNodes.$key
-    }
-
-    [PSCustomObject]$hash
-}
+Add-Type -Path C:\Users\Douglas\Documents\GitHub\PowerYaml\YamlDotNet.dll
 
 function Convert-YamlNode($node) {
-    switch ($node) {
-        {$_ -is [YamlDotNet.RepresentationModel.YamlScalarNode]} {
-            $_.Value
-        }
+    $h=[Ordered]@{} 
+    foreach ($item in $node) {
+        switch ($item) {
 
-        {$_ -is [YamlDotNet.RepresentationModel.YamlMappingNode]} {
-            Convert-YamlMappingNode $_
-        }
-
-        {$_ -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {
-            foreach($yamlNode in $_.Children) {
-                Convert-YamlNode $yamlNode
+            {$_.Value -is [YamlDotNet.RepresentationModel.YamlScalarNode]} {
+                $h.$($_.key) = $_.Value
             }
-        }
+
+            {$_.Value -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {
+                $h.($_.key) = $_.Value.Value
+            }
+
+            {$_.Value -is [YamlDotNet.RepresentationModel.YamlMappingNode]} {
+                
+                $inner=[Ordered]@{}
+                
+                foreach ($element in $_.Value) {
+                    $inner.$($element.key.value) = $element.value.value
+                    
+                }
+                
+                $h.$($_.key)=[PSCustomObject]$inner
+            }
+        }                
     }
+    
+    [PSCustomObject]$h
 }
 
 function ConvertFrom-Yaml {
@@ -41,18 +41,7 @@ function ConvertFrom-Yaml {
         $yamlStream = New-Object YamlDotNet.RepresentationModel.YamlStream
         $yamlStream.Load($reader)
         $reader.Close()
-
-        Convert-YamlNode $yamlStream.Documents.Rootnode
+        
+        Convert-YamlNode $yamlStream.Documents.Rootnode $h
     }
-}
-
-function Import-Yaml {
-    param(
-        [Parameter(ValueFromPipeline)]
-        $LiteralPath
-    )
-    
-    Process {
-        [System.IO.File]::ReadAllText($LiteralPath) | ConvertFrom-Yaml 
-    }           
 }
