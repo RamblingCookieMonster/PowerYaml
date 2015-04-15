@@ -1,7 +1,7 @@
-Add-Type -Path C:\Users\Douglas\Documents\GitHub\PowerYaml\YamlDotNet.dll
+Add-Type -Path $PSScriptRoot\YamlDotNet.dll
 
 function Convert-YamlNode($node) {
-    $h=[Ordered]@{} 
+    $h=[Ordered]@{}
     foreach ($item in $node) {
         switch ($item) {
 
@@ -14,19 +14,19 @@ function Convert-YamlNode($node) {
             }
 
             {$_.Value -is [YamlDotNet.RepresentationModel.YamlMappingNode]} {
-                
+
                 $inner=[Ordered]@{}
-                
+
                 foreach ($element in $_.Value) {
                     $inner.$($element.key.value) = $element.value.value
-                    
+
                 }
-                
+
                 $h.$($_.key)=[PSCustomObject]$inner
             }
-        }                
+        }
     }
-    
+
     [PSCustomObject]$h
 }
 
@@ -41,7 +41,13 @@ function ConvertFrom-Yaml {
         $yamlStream = New-Object YamlDotNet.RepresentationModel.YamlStream
         $yamlStream.Load($reader)
         $reader.Close()
-        
+
         Convert-YamlNode $yamlStream.Documents.Rootnode $h
     }
+}
+
+function ConvertFrom-YamlUri {
+    param($uri)
+
+    Invoke-RestMethod $uri | ConvertFrom-Yaml
 }
