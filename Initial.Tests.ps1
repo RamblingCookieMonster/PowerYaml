@@ -150,3 +150,145 @@ languages:
         }
     }
 }
+
+Describe "when converting yaml sequences|maps" {
+
+$obj=@"
+men: [John Smith, Bill Jones]
+women:
+  - Mary Smith
+  - Susan Williams
+"@ | ConvertFrom-Yaml
+    
+    Context "The sequence" {   
+        It "should have two men" {
+            $obj.men.count | should be 2
+        }
+
+        It "should have two women" {
+            $obj.women.count | should be 2
+        }
+    }
+
+    Context "The food sequence" {
+$obj=@"
+foods:
+    - Apple
+    - Orange
+    - Strawberry
+    - Mango
+"@ | ConvertFrom-Yaml
+
+        It "should have food type of object" {
+            $obj.foods.gettype().name | should be "Object[]"
+        }
+
+        It "should have 4 foods" {
+            $obj.foods.count | should be 4
+        }
+
+        It "should have each of these foods" {
+            $obj.foods -eq 'apple'| should be 'apple'
+            $obj.foods -eq 'orange'| should be 'orange'
+            $obj.foods -eq 'Strawberry'| should be 'Strawberry'
+            $obj.foods -eq 'Mango'| should be 'Mango'
+        }
+
+    }
+
+    Context "the map" {
+    $obj=@"
+product:
+    - sku         : BL4438H
+      quantity    : 1
+      description : Super Hoop
+      price       : 2392.00
+    - sku         : BL394D
+      quantity    : 4
+      description : Basketball
+"@ | ConvertFrom-Yaml
+        
+        It "should have two products" {
+            $obj.product.count | should be 2
+        }
+
+        It "should have 4 properties in the first product" {
+            ($obj.product[0]|Get-Member -MemberType Properties).count | should be 4
+        }
+
+        It "should have these properties in the first product" {
+            $names=($obj.product[0]|Get-Member -MemberType Properties).name
+            $names -eq 'sku' | should be 'sku'
+            $names -eq 'quantity' | should be 'quantity'
+            $names -eq 'description' | should be 'description'
+            $names -eq 'price' | should be 'price'
+        }
+
+        It "should have these values in the first product" {
+            $obj.product[0].sku | should be 'BL4438H'
+            $obj.product[0].quantity | should be '1'
+            $obj.product[0].description | should be 'Super Hoop'
+            $obj.product[0].price | should be '2392.00'
+        }
+        
+        It "should have 3 properties in the second product" {
+            ($obj.product[1]|Get-Member -MemberType Properties).count | should be 3
+        }
+
+        It "should have these properties in the second product" {
+            $names=($obj.product[1]|Get-Member -MemberType Properties).name
+            $names -eq 'sku' | should be 'sku'
+            $names -eq 'quantity' | should be 'quantity'
+            $names -eq 'description' | should be 'description'
+
+            # should not be there
+            $names -eq 'price' | should be $null
+        }
+
+        It "should have these values in the second product" {
+            $obj.product[1].sku | should be 'BL394D'
+            $obj.product[1].quantity | should be '4'
+            $obj.product[1].description | should be 'Basketball'            
+        }
+    }
+}
+
+    Describe "yaml repeated nodes" {
+$obj=@"
+--- 
+invoice: 34843
+date   : 2001-01-23
+bill-to: &id001
+    given  : Chris
+    family : Dumars
+    address:
+        lines: |
+            458 Walkman Dr.
+            Suite #292
+        city    : Royal Oak
+        state   : MI
+        postal  : 48046
+ship-to: *id001
+product:
+    - sku         : BL394D
+      quantity    : 4
+      description : Basketball
+      price       : 450.00
+    - sku         : BL4438H
+      quantity    : 1
+      description : Super Hoop
+      price       : 2392.00
+tax  : 251.42
+total: 4443.52
+comments: >
+    Late afternoon is best.
+    Backup contact is Nancy
+    Billsmer @ 338-4338.
+"@ | ConvertFrom-Yaml
+
+    Context "the repeat" {
+        It "bill-to address should be the same in ship-to" {
+            $obj.'bill-to'.address.lines | should be $obj.'ship-to'.address.lines        
+        }
+    }
+}
