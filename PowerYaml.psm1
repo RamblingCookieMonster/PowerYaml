@@ -1,33 +1,39 @@
 Add-Type -Path $PSScriptRoot\YamlDotNet.dll
 
-function Convert-YamlNode($node) {
-    $h=[Ordered]@{}
+function Convert-YamlNode($node, $h) {
+    
+    if(!$h) {$h=[Ordered]@{}}
+
     foreach ($item in $node) {
         switch ($item) {
 
             {$_.Value -is [YamlDotNet.RepresentationModel.YamlScalarNode]} {
-                $h.$($_.key) = $_.Value
+                $h.$($_.key.Value) = $_.Value.Value
             }
 
             {$_.Value -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {
-                $h.($_.key) = $_.Value.Value
+                
+                foreach ($element in $_.Value) {
+                    $list = Convert-YamlNode $element
+                    $h.$($_.key.value)+=@([PSCustomObject]$list)
+                }
             }
 
             {$_.Value -is [YamlDotNet.RepresentationModel.YamlMappingNode]} {
-
-                $inner=[Ordered]@{}
-
+                $inner=[Ordered]@{}                
                 foreach ($element in $_.Value) {
-                    $inner.$($element.key.value) = $element.value.value
-
+                    $inner+=Convert-YamlNode $element
                 }
+                $h.$($_.key.value)=[PSCustomObject]$inner
+            }
 
-                $h.$($_.key)=[PSCustomObject]$inner
+            default {
+                return $_.Value
             }
         }
     }
 
-    [PSCustomObject]$h
+    $h
 }
 
 function ConvertFrom-Yaml {
@@ -42,7 +48,7 @@ function ConvertFrom-Yaml {
         $yamlStream.Load($reader)
         $reader.Close()
 
-        Convert-YamlNode $yamlStream.Documents.Rootnode $h
+        [PSCustomObject](Convert-YamlNode $yamlStream.Documents.Rootnode)
     }
 }
 
