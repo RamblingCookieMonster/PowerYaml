@@ -11,11 +11,9 @@ function Convert-YamlNode($node, $h) {
                 $h.$($_.key.Value) = $_.Value.Value
             }
 
-            {$_.Value -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {
-                
-                foreach ($element in $_.Value) {
-                    $list = Convert-YamlNode $element
-                    $h.$($_.key.value)+=@([PSCustomObject]$list)
+            {$_.Value -is [YamlDotNet.RepresentationModel.YamlSequenceNode]} {                
+                foreach ($element in $_.Value) {                    
+                    $h.$($_.key.value)+=@([PSCustomObject](Convert-YamlNode $element))
                 }
             }
 
