@@ -55,3 +55,14 @@ function ConvertFrom-YamlUri {
 
     Invoke-RestMethod $uri | ConvertFrom-Yaml
 }
+
+function Import-Yaml {
+    param(
+        [Parameter(ValueFromPipelineByPropertyName)]
+        $FullName
+    )
+ 
+    Process {   
+        [System.IO.File]::ReadAllText($FullName) | ConvertFrom-Yaml        
+    }
+}
