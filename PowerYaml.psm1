@@ -63,6 +63,9 @@ function Import-Yaml {
     )
  
     Process {   
+        # Resolve relative paths -> http://stackoverflow.com/a/3040982/3067642
+        # Credits to MVP Oisin 
+        $Fullname = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($FullName)
         [System.IO.File]::ReadAllText($FullName) | ConvertFrom-Yaml        
     }
 }
